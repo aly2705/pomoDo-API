@@ -1,4 +1,4 @@
-import Task from '../models/tasksModel';
+import Task from '../models/taskModel';
 import * as handlerFactory from './handlerFactory';
 
 export const getAllTasks = handlerFactory.getAll(Task);

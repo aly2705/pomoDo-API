@@ -20,6 +20,8 @@ const sendErrorProd = (err: AppError, res: Response): void => {
 };
 
 const sendErrorDev = (err: AppError, res: Response): void => {
+  console.log(err);
+
   res.status(err.statusCode).json({
     status: 'error',
     message: err.message,
