@@ -1,62 +1,116 @@
 import { Request, Response, NextFunction } from 'express';
-import mongoose from 'mongoose';
+import mongoose, { Document } from 'mongoose';
+import AppError from '../utilities/AppError';
 import catchAsync from '../utilities/catchAsync';
+import { ExtendedRequest } from '../utilities/types';
 
 export const getAll = (Model: mongoose.Model<any>) =>
-  catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const documents: object[] | null = await Model.find();
+  catchAsync(
+    async (req: ExtendedRequest, res: Response, next: NextFunction) => {
+      let queryCrt;
+      if (req.user?.role === 'admin') queryCrt = {};
+      else queryCrt = { user: req.user?.id };
+      const documents: Document[] | null = await Model.find(queryCrt);
 
-    res.status(200).json({
-      status: 'success',
-      documents,
-    });
-  });
+      res.status(200).json({
+        status: 'success',
+        documents,
+      });
+    }
+  );
 
 export const createOne = (Model: mongoose.Model<any>) =>
-  catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const document: object | null = await Model.create(req.body);
+  catchAsync(
+    async (req: ExtendedRequest, res: Response, next: NextFunction) => {
+      req.body.user = req.user?.id;
+      const document: Document | null = await Model.create(req.body);
 
-    res.status(201).json({
-      status: 'success',
-      document,
-    });
-  });
+      res.status(201).json({
+        status: 'success',
+        document,
+      });
+    }
+  );
 
 export const getOne = (Model: mongoose.Model<any>) =>
-  catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const id: string = req.params.id;
-    const document: object | null = await Model.findById(id);
+  catchAsync(
+    async (req: ExtendedRequest, res: Response, next: NextFunction) => {
+      const id: string = req.params.id;
+      const document = await Model.findById(id);
 
-    res.status(200).json({
-      status: 'success',
-      document,
-    });
-  });
+      if (
+        req.user?.id !== document?.user.toString() &&
+        req.user?.role !== 'admin'
+      )
+        return next(
+          new AppError(
+            'You cannot access a resource that belongs to another user',
+            403
+          )
+        );
+      res.status(200).json({
+        status: 'success',
+        data: { document },
+      });
+    }
+  );
 
 export const updateOne = (Model: mongoose.Model<any>) =>
-  catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const id: string = req.params.id;
-    const document: object | null = await Model.findByIdAndUpdate(
-      id,
-      req.body,
-      {
-        new: true, //returns the new document
-        runValidators: true,
-      }
-    );
+  catchAsync(
+    async (req: ExtendedRequest, res: Response, next: NextFunction) => {
+      const id: string = req.params.id;
 
-    res.status(200).json({
-      status: 'success',
-      document,
-    });
-  });
+      const document = await Model.findById(id);
+      if (
+        req.user?.id !== document?.user.toString() &&
+        req.user?.role !== 'admin'
+      )
+        return next(
+          new AppError(
+            'You cannot access a resource that belongs to another user',
+            403
+          )
+        );
+
+      const updatedDocument: Document | null = await Model.findByIdAndUpdate(
+        id,
+        req.body,
+        {
+          new: true, //returns the new document
+          runValidators: true,
+        }
+      );
+
+      res.status(200).json({
+        status: 'success',
+        data: {
+          document: updatedDocument,
+        },
+      });
+    }
+  );
 
 export const deleteOne = (Model: mongoose.Model<any>) =>
-  catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const id: string = req.params.id;
-    await Model.findByIdAndDelete(id);
+  catchAsync(
+    async (req: ExtendedRequest, res: Response, next: NextFunction) => {
+      const id: string = req.params.id;
+      const document = await Model.findById(id);
 
-    res.status(204).json({
-      status: 'success',
-    });
-  });
+      if (
+        req.user?.id !== document?.user.toString() &&
+        req.user?.role !== 'admin'
+      )
+        return next(
+          new AppError(
+            'You cannot access a resource that belongs to another user',
+            403
+          )
+        );
+
+      await Model.findByIdAndDelete(id);
+
+      res.status(204).json({
+        status: 'success',
+      });
+    }
+  );

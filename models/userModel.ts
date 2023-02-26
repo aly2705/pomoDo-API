@@ -10,9 +10,14 @@ interface User {
   photo?: string;
   password: string;
   passwordConfirm: string | undefined;
-  passwordChangedAt?: Date;
+  passwordChangedAt?: Date | number;
   role: string;
   active: boolean;
+  correctPassword: (
+    actualPassword: string,
+    candidatePassword: string
+  ) => Promise<boolean>;
+  passwordWasChanged: (issueTime: number) => boolean;
 }
 
 const userSchema = new mongoose.Schema<User>({
@@ -62,7 +67,34 @@ userSchema.pre('save', async function (next) {
 
   this.password = await bcrypt.hash(this.password, 12);
   this.passwordConfirm = undefined;
+
+  next();
 });
+
+userSchema.pre('save', function (next) {
+  if (this.isModified('password') && !this.isNew)
+    this.passwordChangedAt = Date.now() - 1000;
+  next();
+});
+
+userSchema.pre(/^find/, function (next) {
+  this.find({ active: { $ne: false } });
+  next();
+});
+
+userSchema.methods.correctPassword = async function (
+  actualPassword: string,
+  candidatePassword: string
+) {
+  return await bcrypt.compare(candidatePassword, actualPassword);
+};
+
+userSchema.methods.passwordWasChanged = function (issueTime: number) {
+  if (!this.passwordChangedAt) return false;
+
+  const changedTimestamp = this.passwordChangedAt.getTime() / 1000;
+  return issueTime < changedTimestamp;
+};
 
 const User: mongoose.Model<User> = mongoose.model('User', userSchema);
 

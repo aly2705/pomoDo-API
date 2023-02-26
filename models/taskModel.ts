@@ -6,6 +6,7 @@ interface Task {
   completed: boolean;
   dateCompleted: Date | null;
   text: string;
+  user: mongoose.Types.ObjectId;
 }
 
 const taskSchema = new mongoose.Schema<Task>({
@@ -22,6 +23,11 @@ const taskSchema = new mongoose.Schema<Task>({
   text: {
     type: String,
     required: [true, 'A task must have some description!'],
+  },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: [true, 'A task must belong to a user'],
   },
 });
 

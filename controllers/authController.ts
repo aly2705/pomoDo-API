@@ -1,15 +1,10 @@
-import mongoose from 'mongoose';
-import jwt from 'jsonwebtoken';
+import jwt, { Secret } from 'jsonwebtoken';
 import catchAsync from '../utilities/catchAsync';
 import { NextFunction, Request, Response, CookieOptions } from 'express';
 import User from '../models/userModel';
 import AppError from '../utilities/AppError';
-
-// type CookieOptions = {
-//   expires?: number;
-//   httpOnly?: boolean;
-//   secure?: boolean;
-// };
+import { promisify } from 'util';
+import { ExtendedRequest } from '../utilities/types';
 
 const signToken = (id: string): string =>
   jwt.sign({ id }, process.env.JWT_SECRET as jwt.Secret, {
@@ -66,19 +61,84 @@ export const signup = catchAsync(
 export const login = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     // 1) Check if email and password exists on the body
-    const email: string = req.body.email;
-    const password: string = req.body.password;
+    const email: string | undefined = req.body.email;
+    const password: string | undefined = req.body.password;
     if (!email || !password)
       return next(new AppError('Please provide email and password', 400));
 
     // 2) Find user by email
-    const user = await User.findOne({ email });
+    const user: User | null = await User.findOne({ email }).select('+password');
     // NO USER: Throw operational error
     if (!user) return next(new AppError('Email is invalid!', 400));
 
     // 3) Check if password is correct
-
+    const passwordIsCorrect: boolean = await user.correctPassword(
+      user.password,
+      password
+    );
     // INCORRECT PASSWORD: Throw error
+    if (!passwordIsCorrect)
+      return next(new AppError('Incorrect password! Please try again!', 401));
+
     // 4) Create and send jwt
+    createSendToken(res, user, 200);
   }
 );
+
+export const protect = catchAsync(
+  async (req: ExtendedRequest, res: Response, next: NextFunction) => {
+    // 1) Check for token
+    let token: string | undefined;
+    if (req.headers.authorization?.startsWith('Bearer '))
+      token = req.headers.authorization.split(' ').at(1);
+    else if (req.cookies.jwt) token = req.cookies.jwt;
+
+    if (!token)
+      return next(
+        new AppError(
+          'You are not logged in! Please login in order to perform this action',
+          401
+        )
+      );
+    // 2) Parse and verify token
+
+    const decoded: any = await promisify<string, jwt.Secret>(jwt.verify)(
+      token,
+      process.env.JWT_SECRET as jwt.Secret
+    );
+
+    // 3) Check if user exists
+    const currentUser = await User.findById(decoded.id);
+    if (!currentUser)
+      return next(
+        new AppError(
+          'The user corresponding to the token does no longer exist!',
+          404
+        )
+      );
+
+    // 4) Check if user has changed password after token was issued
+    const passwordWasChangedAfter = currentUser.passwordWasChanged(decoded.iat);
+    if (passwordWasChangedAfter)
+      return next(
+        new AppError(
+          'User has changed password after token was issued! Please log in again to get access!',
+          401
+        )
+      );
+
+    // GRANT PERMISSION
+    req.user = currentUser;
+    next();
+  }
+);
+
+export const restrictTo =
+  (...roles: string[]) =>
+  (req: ExtendedRequest, res: Response, next: NextFunction) => {
+    if (!req.user || !roles.includes(req.user.role))
+      return next(
+        new AppError('You do not have permission to perform this action', 403)
+      );
+    next();
+  };

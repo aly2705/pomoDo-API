@@ -1,17 +1,19 @@
 import express, { Express, NextFunction, Request, Response } from 'express';
 import morgan from 'morgan';
-import taskRouter from './routes/tasksRoutes';
+import taskRouter from './routes/taskRoutes';
 import userRouter from './routes/userRoutes';
 import globalErrorHandler from './controllers/errorController';
 import AppError from './utilities/AppError';
+import cookieParser from 'cookie-parser';
 
 const app: Express = express();
 
 // Requests logging
 if (process.env.NODE_ENV === 'development') app.use(morgan('dev'));
 
-// Body-parser
+// Body-parser & cookie-parser
 app.use(express.json({ limit: '10kb' }));
+app.use(cookieParser());
 
 // Mounting routers
 app.use('/api/v1/tasks', taskRouter);

@@ -1,8 +1,10 @@
 import { Router } from 'express';
-import * as tasksController from '../controllers/tasksController';
+import * as tasksController from '../controllers/taskController';
+import * as authController from '../controllers/authController';
 
 const router: Router = Router();
 
+router.use(authController.protect);
 router
   .route('/')
   .get(tasksController.getAllTasks)
