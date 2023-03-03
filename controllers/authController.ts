@@ -142,3 +142,35 @@ export const restrictTo =
       );
     next();
   };
+
+export const updatePassword = catchAsync(
+  async (req: ExtendedRequest, res: Response, next: NextFunction) => {
+    const { user } = req;
+    const oldPassword: string = req.body.oldPassword;
+    const newPassword: string = req.body.newPassword;
+    const newPasswordConfirm: string = req.body.newPasswordConfirm;
+
+    if (!user)
+      return next(
+        new AppError('Please log in in order to perform this action!', 401)
+      );
+
+    const currentUser = await User.findById(user.id).select('+password');
+    if (!currentUser)
+      return next(
+        new AppError('The user could not be found! Please log in again!', 404)
+      );
+    const passwordIsCorrect = await user.correctPassword(
+      currentUser.password,
+      oldPassword
+    );
+    if (!passwordIsCorrect)
+      return next(new AppError('Password is incorrect! Please try again', 401));
+
+    user.password = newPassword;
+    user.passwordConfirm = newPasswordConfirm;
+    await user.save();
+
+    createSendToken(res, user, 200);
+  }
+);

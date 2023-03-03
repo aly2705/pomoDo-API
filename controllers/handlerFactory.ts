@@ -38,8 +38,12 @@ export const getOne = (Model: mongoose.Model<any>) =>
       const id: string = req.params.id;
       const document = await Model.findById(id);
 
+      if (!document)
+        return next(new AppError('There is no resource with that ID', 404));
+
+      // Action must be performed either by the user that owns them (where possible) or by an admin
       if (
-        req.user?.id !== document?.user.toString() &&
+        req.user?.id !== document?.user?.toString() &&
         req.user?.role !== 'admin'
       )
         return next(
@@ -61,8 +65,12 @@ export const updateOne = (Model: mongoose.Model<any>) =>
       const id: string = req.params.id;
 
       const document = await Model.findById(id);
+      if (!document)
+        return next(new AppError('There is no resource with that ID', 404));
+
+      // Action must be performed either by the user that owns them (where possible) or by an admin
       if (
-        req.user?.id !== document?.user.toString() &&
+        req.user?.id !== document?.user?.toString() &&
         req.user?.role !== 'admin'
       )
         return next(
@@ -96,8 +104,12 @@ export const deleteOne = (Model: mongoose.Model<any>) =>
       const id: string = req.params.id;
       const document = await Model.findById(id);
 
+      if (!document)
+        return next(new AppError('There is no resource with that ID', 404));
+
+      // Action must be performed either by the user that owns them (where possible) or by an admin
       if (
-        req.user?.id !== document?.user.toString() &&
+        req.user?.id !== document?.user?.toString() &&
         req.user?.role !== 'admin'
       )
         return next(

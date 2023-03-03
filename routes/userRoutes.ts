@@ -8,6 +8,13 @@ router.post('/signup', authController.signup);
 router.post('/login', authController.login);
 
 router.use(authController.protect);
+
+router.post('/updatePassword', authController.updatePassword);
+router
+  .route('/me')
+  .get(userController.getCurrentUser)
+  .patch(userController.updateCurrentUser);
+
 router.use(authController.restrictTo('admin'));
 
 router.route('/').get(userController.getAllUsers);

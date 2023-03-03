@@ -1,9 +1,8 @@
-import { NextFunction } from 'express';
-import mongoose, { Date } from 'mongoose';
+import mongoose, { Date, Document } from 'mongoose';
 import validator from 'validator';
 import bcrypt from 'bcryptjs';
 
-interface User {
+interface User extends Document {
   id: string;
   name: string;
   email: string;
