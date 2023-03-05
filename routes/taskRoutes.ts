@@ -5,6 +5,7 @@ import * as authController from '../controllers/authController';
 const router: Router = Router();
 
 router.use(authController.protect);
+router.delete('/removeCompleted', tasksController.deleteAllCompleted);
 router
   .route('/')
   .get(tasksController.getAllTasks)

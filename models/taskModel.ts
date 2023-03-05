@@ -1,7 +1,7 @@
-import mongoose, { Date } from 'mongoose';
+import mongoose, { Date, Document } from 'mongoose';
 
 // Document interface
-interface Task {
+interface Task extends Document {
   category: string;
   completed: boolean;
   dateCompleted: Date | null;
