@@ -24,6 +24,7 @@ const overviewSchema = new mongoose.Schema<Overview>({
         required: [true, 'Hours array should have hours between 5-23'],
         min: 5,
         max: 23,
+        unique: true
       },
       activeMinutes: { type: Number, default: 0, min: 0, max: 60 },
     },

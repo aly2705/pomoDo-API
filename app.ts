@@ -2,6 +2,7 @@ import express, { Express, NextFunction, Request, Response } from 'express';
 import morgan from 'morgan';
 import taskRouter from './routes/taskRoutes';
 import userRouter from './routes/userRoutes';
+import overviewRouter from './routes/overviewRoutes';
 import globalErrorHandler from './controllers/errorController';
 import AppError from './utilities/AppError';
 import cookieParser from 'cookie-parser';
@@ -18,6 +19,7 @@ app.use(cookieParser());
 // Mounting routers
 app.use('/api/v1/tasks', taskRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/overviews', overviewRouter);
 
 app.all('*', (req: Request, res: Response, next: NextFunction) => {
   const err: AppError = new AppError(`Can't find ${req.originalUrl}`, 404);
