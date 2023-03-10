@@ -14,6 +14,7 @@ export const getAll = (Model: mongoose.Model<any>) =>
 
       res.status(200).json({
         status: 'success',
+        results: documents.length,
         documents,
       });
     }

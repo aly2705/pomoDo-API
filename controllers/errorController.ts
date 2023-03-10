@@ -1,10 +1,8 @@
 import AppError from '../utilities/AppError';
 import { NextFunction, Request, Response } from 'express';
-import { Error, MongooseError } from 'mongoose';
+import { Error } from 'mongoose';
 import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 import { MongoServerError } from 'mongodb';
-
-// #ff0000: Complete with specific messages for operational errors
 
 // JWT Errors
 const handleJWTExpired = () => {
@@ -22,10 +20,12 @@ const handleCastErrorDB = (err: Error.CastError) => {
   return new AppError(message, 400);
 };
 const handleDuplicateFieldDB = (err: MongoServerError) => {
-  console.log(err);
+  //console.log(err);
 
   const value = err.errmsg.match(/(["'])(?:\\.|[^\\])*?\1/)?.at(0) || '';
-  const message = `Duplicate field value: ${value} . Please use another value`;
+  const field = Object.entries(err.keyPattern)[0][0];
+
+  const message = `Duplicate field value for ${field} (${value}). Please use another value`;
 
   return new AppError(message, 400);
 };
@@ -67,28 +67,24 @@ const globalErrorHandler = (
   next: NextFunction
 ) => {
   let error: AppError;
+  error = Object.create(caughtError);
+
+  if (caughtError instanceof Error.CastError)
+    error = handleCastErrorDB(caughtError);
+
+  if (caughtError instanceof MongoServerError && caughtError.code === 11000)
+    error = handleDuplicateFieldDB(caughtError);
+
+  if (caughtError instanceof Error.ValidationError)
+    error = handleValidationErrorDB(caughtError);
+
+  if (caughtError instanceof JsonWebTokenError) error = handleJWTInvalid();
+
+  if (caughtError instanceof TokenExpiredError) error = handleJWTExpired();
 
   if (process.env.NODE_ENV === 'development') {
-    if (!(caughtError instanceof AppError)) {
-      error = new AppError(caughtError.message, 500, false);
-    } else error = caughtError;
     sendErrorDev(error, res);
   } else {
-    error = Object.create(caughtError);
-
-    if (caughtError instanceof Error.CastError)
-      error = handleCastErrorDB(caughtError);
-
-    if (caughtError instanceof MongoServerError && caughtError.code === 11000)
-      error = handleDuplicateFieldDB(caughtError);
-
-    if (caughtError instanceof Error.ValidationError)
-      error = handleValidationErrorDB(caughtError);
-
-    if (caughtError instanceof JsonWebTokenError) error = handleJWTInvalid();
-
-    if (caughtError instanceof TokenExpiredError) error = handleJWTExpired();
-
     sendErrorProd(error, res);
   }
 };
