@@ -1,7 +1,7 @@
 import { Response, NextFunction } from 'express';
 import Overview from '../models/overviewModel';
 import catchAsync from '../utilities/catchAsync';
-import { ExtendedRequest } from '../utilities/types';
+import { ExtendedRequest } from '../types/types';
 import * as handlerFactory from './handlerFactory';
 
 export const getCurrentUserOverview = catchAsync(

@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import mongoose, { Document } from 'mongoose';
 import AppError from '../utilities/AppError';
 import catchAsync from '../utilities/catchAsync';
-import { ExtendedRequest } from '../utilities/types';
+import { ExtendedRequest } from '../types/types';
 
 export const getAll = (Model: mongoose.Model<any>) =>
   catchAsync(

@@ -1,7 +1,7 @@
 import { NextFunction, Response } from 'express';
 import Task from '../models/taskModel';
 import catchAsync from '../utilities/catchAsync';
-import { ExtendedRequest } from '../utilities/types';
+import { ExtendedRequest } from '../types/types';
 import * as handlerFactory from './handlerFactory';
 
 export const deleteAllCompleted = catchAsync(

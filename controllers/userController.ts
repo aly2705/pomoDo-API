@@ -2,7 +2,7 @@ import { NextFunction, Response } from 'express';
 import User from '../models/userModel';
 import AppError from '../utilities/AppError';
 import catchAsync from '../utilities/catchAsync';
-import { ExtendedRequest } from '../utilities/types';
+import { ExtendedRequest } from '../types/types';
 import * as handlerFactory from './handlerFactory';
 
 export const getCurrentUser = catchAsync(

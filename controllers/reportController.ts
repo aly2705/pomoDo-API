@@ -1,7 +1,7 @@
 import * as handlerFactory from './handlerFactory';
 import Report from '../models/reportModel';
 import catchAsync from '../utilities/catchAsync';
-import { ExtendedRequest } from '../utilities/types';
+import { ExtendedRequest } from '../types/types';
 import { NextFunction, Response } from 'express';
 import AppError from '../utilities/AppError';
 

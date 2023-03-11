@@ -4,7 +4,7 @@ import { NextFunction, Request, Response, CookieOptions } from 'express';
 import User from '../models/userModel';
 import AppError from '../utilities/AppError';
 import { promisify } from 'util';
-import { ExtendedRequest } from '../utilities/types';
+import { ExtendedRequest } from '../types/types';
 
 const signToken = (id: string): string =>
   jwt.sign({ id }, process.env.JWT_SECRET as jwt.Secret, {
