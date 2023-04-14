@@ -27,9 +27,10 @@ mongoose
     console.log('Successfully connected to the database');
   });
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 4000;
 
 const server = app.listen(port, () => {
+  console.log(`Don't forget to reactivate rate limiter`);
   console.log(`App listening for requests on port ${port}...`);
 });
 

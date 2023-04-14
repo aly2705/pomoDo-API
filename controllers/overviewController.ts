@@ -3,6 +3,7 @@ import Overview from '../models/overviewModel';
 import catchAsync from '../utilities/catchAsync';
 import { ExtendedRequest } from '../types/types';
 import * as handlerFactory from './handlerFactory';
+import AppError from '../utilities/AppError';
 
 export const getCurrentUserOverview = catchAsync(
   async (req: ExtendedRequest, res: Response) => {
@@ -10,7 +11,32 @@ export const getCurrentUserOverview = catchAsync(
 
     res.status(200).json({
       status: 'success',
-      overview,
+      overview: overview.at(0) || null,
+    });
+  }
+);
+
+export const updateCurrentUserOverview = catchAsync(
+  async (req: ExtendedRequest, res: Response, next: NextFunction) => {
+    const overview = await Overview.find({ user: req.user?.id });
+
+    if (!overview.length)
+      return next(new AppError('There is no overview for this user', 404));
+
+    const updatedDocument: Document | null = await Overview.findByIdAndUpdate(
+      overview.at(0)?._id,
+      req.body,
+      {
+        new: true, //returns the new document
+        runValidators: true,
+      }
+    );
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        document: updatedDocument,
+      },
     });
   }
 );

@@ -13,7 +13,7 @@ const taskSchema = new mongoose.Schema<Task>({
   category: {
     type: String,
     required: [true, 'A task must have a category'],
-    enum: ['work', 'study', 'exercise', 'health', 'wellness', 'chores'],
+    enum: ['Work', 'Study', 'Exercise', 'Health', 'Wellness', 'Chores'],
   },
   completed: {
     type: Boolean,

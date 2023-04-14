@@ -11,7 +11,6 @@ interface Report {
 const reportSchema = new mongoose.Schema<Report>({
   date: {
     type: Date,
-    unique: true,
     required: [true, 'A report must have a date!'],
     validate: {
       validator: (input: Date) => {

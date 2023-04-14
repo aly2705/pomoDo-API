@@ -5,7 +5,10 @@ import * as authController from '../controllers/authController';
 const router: Router = express.Router();
 
 router.use(authController.protect);
-router.get('/myOverview', overviewController.getCurrentUserOverview);
+router
+  .route('/myOverview')
+  .get(overviewController.getCurrentUserOverview)
+  .patch(overviewController.updateCurrentUserOverview);
 router
   .route('/')
   .get(authController.restrictTo('admin'), overviewController.getAllOverviews)

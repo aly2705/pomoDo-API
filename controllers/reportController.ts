@@ -5,6 +5,10 @@ import { ExtendedRequest } from '../types/types';
 import { NextFunction, Response } from 'express';
 import AppError from '../utilities/AppError';
 
+export const getAllReports = handlerFactory.getAll(Report);
+export const getReport = handlerFactory.getOne(Report);
+export const deleteReport = handlerFactory.deleteOne(Report);
+
 export const updateReport = catchAsync(
   async (req: ExtendedRequest, res: Response, next: NextFunction) => {
     const id: string = req.params.id;
@@ -53,10 +57,40 @@ export const updateReport = catchAsync(
   }
 );
 
-export const getAllReports = handlerFactory.getAll(Report);
-export const createReport = handlerFactory.createOne(Report);
-export const getReport = handlerFactory.getOne(Report);
-export const deleteReport = handlerFactory.deleteOne(Report);
+const dateIsTheSame = (reportDate: Date, userDate: string) => {
+  const userDateDay = new Date(userDate).getDate();
+  const userDateMonth = new Date(userDate).getMonth();
+  const userDateYear = new Date(userDate).getFullYear();
+  return (
+    userDateDay === reportDate.getDate() &&
+    userDateMonth === reportDate.getMonth() &&
+    userDateYear === reportDate.getFullYear()
+  );
+};
+
+export const createReport = catchAsync(
+  async (req: ExtendedRequest, res: Response, next: NextFunction) => {
+    req.body.user = req.user?.id;
+    const existentReportOfSameDate = (
+      await Report.find({
+        user: req.user?.id,
+      })
+    ).find(report => dateIsTheSame(report.date, req.body.date));
+
+    if (existentReportOfSameDate) {
+      return next(
+        new AppError('Duplicate dates are not allowed for reports!', 400)
+      );
+    }
+
+    const report: Report | null = await Report.create(req.body);
+
+    res.status(201).json({
+      status: 'success',
+      document: report,
+    });
+  }
+);
 
 // SPECIAL HANDLERS FOR THE APP
 export const getCurrentYearCalendar = catchAsync(
@@ -80,9 +114,10 @@ export const getCurrentYearCalendar = catchAsync(
     ];
     sortedReports.forEach(report => {
       //if (report.date.getFullYear() !== new Date().getFullYear()) return;
+
       const day = report.date.getDate();
       const month = report.date.getMonth();
-      calendar[month][day] = report;
+      calendar[month][day - 1] = report;
     });
 
     res.status(200).json({
