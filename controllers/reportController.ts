@@ -114,10 +114,20 @@ export const getCurrentYearCalendar = catchAsync(
     ];
     sortedReports.forEach(report => {
       //if (report.date.getFullYear() !== new Date().getFullYear()) return;
+      const reportDate = new Date(report.date);
+      const newReportDate = new Date(
+        reportDate.getFullYear(),
+        reportDate.getMonth(),
+        reportDate.getDate(),
+        14,
+        0
+      );
+      //console.log(reportDate, newReportDate);
 
-      const day = report.date.getDate();
-      const month = report.date.getMonth();
-      calendar[month][day - 1] = report;
+      const day = newReportDate.getDate();
+      const month = newReportDate.getMonth();
+
+      calendar[month][day] = report;
     });
 
     res.status(200).json({

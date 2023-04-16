@@ -7,11 +7,24 @@ import AppError from '../utilities/AppError';
 
 export const getCurrentUserOverview = catchAsync(
   async (req: ExtendedRequest, res: Response) => {
-    const overview = await Overview.find({ user: req.user?.id });
+    const overviews = await Overview.find({ user: req.user?.id });
+
+    const overview: Overview | null = overviews.at(0) || null;
+
+    if (overview) {
+      const newOverviewDate = new Date(
+        overview.date.getFullYear(),
+        overview.date.getMonth(),
+        overview.date.getDate(),
+        14,
+        0
+      );
+      overview.date = newOverviewDate;
+    }
 
     res.status(200).json({
       status: 'success',
-      overview: overview.at(0) || null,
+      overview,
     });
   }
 );
