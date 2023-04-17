@@ -123,6 +123,7 @@ export const getCurrentYearCalendar = catchAsync(
         0
       );
       //console.log(reportDate, newReportDate);
+      console.log(new Date());
 
       const day = newReportDate.getDate();
       const month = newReportDate.getMonth();
