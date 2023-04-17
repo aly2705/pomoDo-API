@@ -11,17 +11,6 @@ export const getCurrentUserOverview = catchAsync(
 
     const overview: Overview | null = overviews.at(0) || null;
 
-    if (overview) {
-      const newOverviewDate = new Date(
-        overview.date.getFullYear(),
-        overview.date.getMonth(),
-        overview.date.getDate(),
-        14,
-        0
-      );
-      overview.date = newOverviewDate;
-    }
-
     res.status(200).json({
       status: 'success',
       overview,
