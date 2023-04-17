@@ -19,17 +19,13 @@ const reportSchema = new mongoose.Schema<Report>({
         const enteredDay = new Date(
           enteredDate.getFullYear(),
           enteredDate.getMonth(),
-          enteredDate.getDate(),
-          2,
-          0
+          enteredDate.getDate()
         );
 
         const today = new Date(
           new Date().getFullYear(),
           new Date().getMonth(),
-          new Date().getDate(),
-          2,
-          0
+          new Date().getDate()
         );
 
         return enteredDay.getTime() < today.getTime();
@@ -63,13 +59,18 @@ const reportSchema = new mongoose.Schema<Report>({
 });
 
 reportSchema.pre('save', function (next) {
-  //   console.log(this);
+  // For Localhost API report posting (GMT+3 or GMT+2 not syncronized with GMT+0 of mongodb)
+  // this.date = new Date(
+  //   this.date.getFullYear(),
+  //   this.date.getMonth(),
+  //   this.date.getDate(), 3, 0
+  // );
+
+  // For railway API report posting (GMT+0 syncronized with GMT+0 of mongodb)
   this.date = new Date(
     this.date.getFullYear(),
     this.date.getMonth(),
-    this.date.getDate(),
-    2,
-    0
+    this.date.getDate()
   );
 
   next();
