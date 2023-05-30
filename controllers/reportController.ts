@@ -98,7 +98,7 @@ export const getCurrentYearCalendar = catchAsync(
     const sortedReports = await Report.find({ user: req.user?.id }).sort(
       'date'
     );
-    const calendar: Report[][] = [
+    const calendar: Report[][] | null[][] = [
       [],
       [],
       [],
@@ -120,6 +120,12 @@ export const getCurrentYearCalendar = catchAsync(
 
       calendar[month][day - 1] = report;
     });
+    const lastReportMonth = sortedReports.at(-1)?.date.getMonth();
+    const lastReportDay = sortedReports.at(-1)?.date.getDate();
+    const currentDay = new Date().getDate();
+    const currentMonth = new Date().getMonth();
+    if (!(currentDay === lastReportDay && currentMonth === lastReportMonth))
+      calendar[currentMonth][currentDay - 1] = null;
 
     res.status(200).json({
       status: 'success',
