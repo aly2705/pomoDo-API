@@ -11,4 +11,4 @@ RUN npm install
 
 EXPOSE 4000
 # Define the entry point for the container
-CMD ["npm", "run", "prod"]
+CMD ["npm", "start"]
