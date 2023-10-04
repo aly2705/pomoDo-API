@@ -133,18 +133,3 @@ export const getCurrentYearCalendar = catchAsync(
     });
   }
 );
-
-// DEV HELPER FOR MULTIPLE REPORT INJECTION IN DB
-
-// export const importReports = catchAsync(
-//   async (req: ExtendedRequest, res: Response, next: NextFunction) => {
-//     const reports = req.body.reports;
-//     reports.forEach(async (report: any) => {
-//       await Report.create(report);
-//     });
-
-//     res.status(200).json({
-//       status: 'success',
-//     });
-//   }
-// );
