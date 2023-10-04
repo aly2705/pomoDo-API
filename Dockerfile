@@ -1,14 +1,14 @@
-FROM node:16
+FROM node:18
 
-# Create app directory
-WORKDIR /usr/src/app
+# Set the working directory in the container
+WORKDIR /app
 
-# Install app dependencies
-COPY package*.json ./
+# Copy the application files into the working directory
+COPY . /app
 
-# If you are building your code for production
-RUN npm ci --omit=dev
+# Install the application dependencies
+RUN npm install
 
-COPY . .
 EXPOSE 4000
-RUN npm run prod
+# Define the entry point for the container
+CMD ["npm", "run", "prod"]
