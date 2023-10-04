@@ -25,12 +25,12 @@ app.options('*', cors());
 app.use(helmet());
 
 // 2) Rate limiting
-// const limiter = rateLimit({
-//   max: 100,
-//   windowMs: 60 * 60 * 1000,
-//   message: 'Too many requests fro this IP, please try again in an hour',
-// });
-// app.use('/api', limiter);
+const limiter = rateLimit({
+  max: 100,
+  windowMs: 60 * 60 * 1000,
+  message: 'Too many requests fro this IP, please try again in an hour',
+});
+app.use('/api', limiter);
 
 // 3) Body-parser with transfer limit & cookie-parser
 app.use(express.json({ limit: '10kb' }));
