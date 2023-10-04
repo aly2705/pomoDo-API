@@ -8,6 +8,7 @@ COPY . /app
 
 # Install the application dependencies
 RUN npm install
+RUN npm build
 
 EXPOSE 4000
 # Define the entry point for the container
