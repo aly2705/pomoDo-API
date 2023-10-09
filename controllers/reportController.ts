@@ -124,8 +124,37 @@ export const getCurrentYearCalendar = catchAsync(
     const lastReportDay = sortedReports.at(-1)?.date.getDate();
     const currentDay = new Date().getDate();
     const currentMonth = new Date().getMonth();
+
+    // Fill the day before today with null, so calendar has null where days were inactive
     if (!(currentDay === lastReportDay && currentMonth === lastReportMonth))
       calendar[currentMonth][currentDay - 1] = null;
+
+    // Check for full year
+    const firstReportMonth = sortedReports.at(0)?.date.getMonth();
+    const firstReportYear = sortedReports.at(0)?.date.getFullYear();
+    if (
+      firstReportMonth &&
+      firstReportYear &&
+      firstReportMonth <= currentMonth &&
+      firstReportYear <= new Date().getFullYear() - 1
+    ) {
+      // Find all reports that overlap
+      const reportsToBeDeletedIds = sortedReports
+        .filter(
+          report =>
+            report.date.getMonth() <= currentMonth &&
+            report.date.getFullYear() <= new Date().getFullYear() - 1
+        )
+        .map(report => report.id);
+
+      // Delete reports older than one year
+      reportsToBeDeletedIds.forEach(async reportId => {
+        await Report.findByIdAndDelete(reportId);
+      });
+
+      // Empty the currentMonth
+      calendar[currentMonth] = [];
+    }
 
     res.status(200).json({
       status: 'success',
