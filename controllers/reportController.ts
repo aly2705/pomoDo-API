@@ -137,14 +137,22 @@ export const getCurrentYearCalendar = catchAsync(
     const currentDayTimestamp = new Date().getTime();
     const msYear = 31556952000;
 
-    if (currentDayTimestamp - firstReportTimestamp! > msYear) {
+    if (
+      currentDayTimestamp - firstReportTimestamp! > msYear ||
+      (firstReportMonth === currentMonth &&
+        firstReportYear === new Date().getFullYear() - 1)
+    ) {
       // We found overlaps
 
       // Find all reports that are older than one year
       const reportsToBeDeletedIds = sortedReports
-        .filter(report => currentDayTimestamp - report.date.getTime() > msYear)
+        .filter(
+          report =>
+            currentDayTimestamp - report.date.getTime() > msYear ||
+            (report.date.getMonth() === currentMonth &&
+              report.date.getFullYear() === new Date().getFullYear() - 1)
+        )
         .map(report => report.id);
-      console.log(reportsToBeDeletedIds);
 
       // Delete reports older than one year
       reportsToBeDeletedIds.forEach(async reportId => {
